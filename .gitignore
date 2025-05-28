@@ -1,0 +1,12 @@
+# Azure DevOps extension files
+*.vsix
+.vscode/
+
+# Temporary files
+tmp/
+temp/
+*.tmp
+
+# OS-generated files
+.DS_Store
+Thumbs.db
