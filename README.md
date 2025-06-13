@@ -47,7 +47,7 @@ The Cloudsmith CLI allows you to:
 
 ## 🤝 Contributing
 
-We welcome contributions! Please ensure changes are tested and include relevant documentation updates. For formula contributions, make sure to bump the version and update the SHA256 value. You can check contributing guilde [here](https://github.com/cloudsmith-io/homebrew-cloudsmith-cli/blob/main/CONTRIBUTING.md).
+We welcome contributions! Please ensure changes are tested and include relevant documentation updates. For formula contributions, make sure to bump the version and update the SHA256 value. You can check contributing guide [here](https://github.com/cloudsmith-io/homebrew-cloudsmith-cli/blob/main/CONTRIBUTING.md).
 
 ## 🧾 License
 
