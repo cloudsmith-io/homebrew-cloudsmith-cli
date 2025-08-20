@@ -2,7 +2,7 @@ class CloudsmithCli < Formula
   include Language::Python::Virtualenv
 
   desc "Official Cloudsmith Command-Line Interface - Be Awesome. Automate Everything"
-  homepage "https://docs.cloudsmith.com/getting-started/cli"
+  homepage "https://docs.cloudsmith.com/developer-tools/cli"
   url "https://github.com/cloudsmith-io/cloudsmith-cli/archive/refs/tags/v1.8.2.tar.gz"
   sha256 "37473487b74dd19d20296b3523168aa18f7be1311ede03b2e1617a1bcc1ad7d9"
   license "Apache-2.0"
