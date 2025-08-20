@@ -42,7 +42,7 @@ The Cloudsmith CLI allows you to:
 - Manage entitlement tokens, upstream proxies, and metadata
 - Integrate with CI/CD workflows and automation tools
 
-📘 [Read the full CLI documentation →](https://docs.cloudsmith.com/getting-started/cli)
+📘 [Read the full CLI documentation →](https://docs.cloudsmith.com/developer-tools/cli)
 
 
 ## 🤝 Contributing
