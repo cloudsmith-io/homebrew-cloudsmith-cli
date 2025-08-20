@@ -1,6 +1,6 @@
 # Cloudsmith CLI Homebrew Tap
 
-🍺 This is the official Homebrew Tap for installing the [Cloudsmith CLI](https://docs.cloudsmith.com/getting-started/cli) — a powerful command-line interface to manage everything Cloudsmith.
+🍺 This is the official Homebrew Tap for installing the [Cloudsmith CLI](https://docs.cloudsmith.com/developer-tools/cli) — a powerful command-line interface to manage everything Cloudsmith.
 
 ## 🔧 Installation
 
