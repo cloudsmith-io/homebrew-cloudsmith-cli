@@ -2,9 +2,9 @@ class CloudsmithCli < Formula
   include Language::Python::Virtualenv
 
   desc "Official Cloudsmith Command-Line Interface - Be Awesome. Automate Everything"
-  homepage "https://docs.cloudsmith.com/developer-tools/cli"
-  url "https://github.com/cloudsmith-io/cloudsmith-cli/archive/refs/tags/v1.8.2.tar.gz"
-  sha256 "37473487b74dd19d20296b3523168aa18f7be1311ede03b2e1617a1bcc1ad7d9"
+  homepage "https://help.cloudsmith.io/docs/cli/"
+  url "https://github.com/cloudsmith-io/cloudsmith-cli/archive/refs/tags/v1.8.6.tar.gz"
+  sha256 "41f13fe228aaf63a6c62ffc301f94128ad7e24310025247cdd677b3b85ec2033"
   license "Apache-2.0"
 
   depends_on "python@3.10"
@@ -45,8 +45,8 @@ class CloudsmithCli < Formula
   end
 
   resource "cloudsmith-api" do
-    url "https://files.pythonhosted.org/packages/16/a5/a9df13eb4df76314f29640a98cce752179d4cfd4ca4037ce7b19a0690be5/cloudsmith_api-2.0.18-py2.py3-none-any.whl"
-    sha256 "e4c9dfd5568485f85376621a4825b9bd40dc29ce33585dc810b3f5cbed688b8f"
+    url "https://files.pythonhosted.org/packages/f4/9b/4615c00d360225349ae5482cd730282ace72fe4b3c4bef2b1f1fe53da2ef/cloudsmith_api-2.0.22-py2.py3-none-any.whl"
+    sha256 "1597038eb2b9fa81c2ddd5414977feb715ba8687cfe8e9269233b8349174e584"
   end
 
   resource "configparser" do
