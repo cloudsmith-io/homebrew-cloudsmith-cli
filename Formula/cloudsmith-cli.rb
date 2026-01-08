@@ -3,8 +3,8 @@ class CloudsmithCli < Formula
 
   desc "Official Cloudsmith Command-Line Interface - Be Awesome. Automate Everything"
   homepage "https://help.cloudsmith.io/docs/cli/"
-  url "https://github.com/cloudsmith-io/cloudsmith-cli/archive/refs/tags/v1.10.2.tar.gz"
-  sha256 "4e745529a10e5ab70903392754a2705fe1aeb8d9f89e5293b18dcb5b967f90ab"
+  url "https://github.com/cloudsmith-io/cloudsmith-cli/archive/refs/tags/v1.10.3.tar.gz"
+  sha256 "54e52b91b8fed05c97aee242cc6ee7ef2b3a2d55e3e47b3d79a136f26dc522c2"
   license "Apache-2.0"
 
   depends_on "python@3.10"
