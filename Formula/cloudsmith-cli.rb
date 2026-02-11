@@ -3,8 +3,8 @@ class CloudsmithCli < Formula
 
   desc "Official Cloudsmith Command-Line Interface - Be Awesome. Automate Everything"
   homepage "https://help.cloudsmith.io/docs/cli/"
-  url "https://github.com/cloudsmith-io/cloudsmith-cli/archive/refs/tags/v1.12.1.tar.gz"
-  sha256 "66e1ea18c3cb5799ace641c4a846d59d3f30f4c81ed42f32685282b9789da2d7"
+  url "https://files.pythonhosted.org/packages/7b/80/a55488ef8fc9a8d4bbf64f6373d4b2a526119b6290e6a6adea527682cacb/cloudsmith_cli-1.12.1-py2.py3-none-any.whl"
+  sha256 "afd173f680ddb9f6e6226999f49f55a227ea4d783d831d68d3c5d81b2da2cb9e"
   license "Apache-2.0"
 
   depends_on "python@3.10"
@@ -57,13 +57,6 @@ class CloudsmithCli < Formula
   resource "cloudsmith-api" do
     url "https://files.pythonhosted.org/packages/f2/c4/20b73738200e22f773998d7219ca730bb2d112403fc30b93691588bef61d/cloudsmith_api-2.0.24.tar.gz"
     sha256 "28d38056d21d044b104d8901057fd48cc1fc88b947e609ee363ddde2581cc0ce"
-  end
-
-  # The cloudsmith-cli source tarball fails to build due to setuptools-scm version detection.
-  # Using the wheel instead as "cloudsmith-cli-pkg" to avoid name collision with formula.
-  resource "cloudsmith-cli" do
-    url "https://files.pythonhosted.org/packages/7b/80/a55488ef8fc9a8d4bbf64f6373d4b2a526119b6290e6a6adea527682cacb/cloudsmith_cli-1.12.1-py2.py3-none-any.whl"
-    sha256 "afd173f680ddb9f6e6226999f49f55a227ea4d783d831d68d3c5d81b2da2cb9e"
   end
 
   resource "configparser" do
@@ -152,11 +145,19 @@ class CloudsmithCli < Formula
         url "https://files.pythonhosted.org/packages/fb/a8/61c96a77fe28993d9a6fb0f4127e05430a267b235a124545d79fea46dd65/pydantic_core-2.41.5-cp310-cp310-macosx_11_0_arm64.whl"
         sha256 "dfa8a0c812ac681395907e71e1274819dec685fec28273a28905df579ef137e2"
       end
+      on_linux do
+        url "https://files.pythonhosted.org/packages/5d/b6/338abf60225acc18cdc08b4faef592d0310923d19a87fba1faf05af5346e/pydantic_core-2.41.5-cp310-cp310-manylinux_2_17_aarch64.manylinux2014_aarch64.whl"
+        sha256 "5921a4d3ca3aee735d9fd163808f5e8dd6c6972101e4adbda9a4667908849b97"
+      end
     end
     on_intel do
       on_macos do
         url "https://files.pythonhosted.org/packages/c6/90/32c9941e728d564b411d574d8ee0cf09b12ec978cb22b294995bae5549a5/pydantic_core-2.41.5-cp310-cp310-macosx_10_12_x86_64.whl"
         sha256 "77b63866ca88d804225eaa4af3e664c5faf3568cea95360d21f4725ab6e07146"
+      end
+      on_linux do
+        url "https://files.pythonhosted.org/packages/a8/76/7727ef2ffa4b62fcab916686a68a0426b9b790139720e1934e8ba797e238/pydantic_core-2.41.5-cp310-cp310-manylinux_2_17_x86_64.manylinux2014_x86_64.whl"
+        sha256 "100baa204bb412b74fe285fb0f3a385256dad1d1879f0a5cb1499ed2e83d132a"
       end
     end
   end
@@ -253,23 +254,20 @@ class CloudsmithCli < Formula
     cp cached_pc, wheel_pc
     system libexec/"bin/python", "-m", "pip", "install", "--no-deps", wheel_pc
 
-    # Install cloudsmith-cli from wheel (source tarball has setuptools-scm version issue)
-    cloudsmith_cli = resource("cloudsmith-cli")
-    cached_cc = cloudsmith_cli.cached_download
-    original_cc = cached_cc.basename.to_s.split("--", 2).last
-    wheel_cc = buildpath/original_cc
-    cp cached_cc, wheel_cc
-    system libexec/"bin/python", "-m", "pip", "install", "--no-deps", wheel_cc
-
-    # Install remaining resources from source (skip wheel resources)
+    # Install remaining resources from source (skip pydantic-core wheel)
     resources.each do |r|
-      next if ["pydantic-core", "cloudsmith-cli"].include?(r.name)
-
+      next if r.name == "pydantic-core"
       venv.pip_install r
     end
 
-    # Link binaries
-    (bin/"cloudsmith").write_env_script libexec/"bin/cloudsmith", PATH: "#{libexec}/bin:$PATH"
+    # Install main cloudsmith-cli wheel (need to copy with correct filename)
+    original_main = cached_download.basename.to_s.split("--", 2).last
+    wheel_main = buildpath/original_main
+    cp cached_download, wheel_main
+    system libexec/"bin/python", "-m", "pip", "install", "--no-deps", wheel_main
+
+    # Link the cloudsmith binary to bin
+    bin.install_symlink libexec/"bin/cloudsmith"
   end
 
   test do
