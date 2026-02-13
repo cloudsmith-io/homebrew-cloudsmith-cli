@@ -28,6 +28,20 @@ brew upgrade cloudsmith-cli
 - Easily keep the CLI up to date with `brew upgrade`
 - CLI lets you manage packages, repositories, and access controls
 
+## 🖥️ Platform Support
+
+This formula uses the official [PEX/zipapp distribution](https://github.com/cloudsmith-io/cloudsmith-cli/releases) which supports the following platforms:
+
+- **Linux x86_64** (glibc) - Debian, Ubuntu, RHEL, CentOS
+- **Linux ARM64** (glibc) - ARM-based Linux servers
+- **Linux x86_64** (musl) - Alpine Linux
+- **Linux ARM64** (musl) - Alpine Linux ARM
+- **macOS ARM64** - Apple Silicon
+
+**Python versions:** 3.10, 3.11, 3.12, 3.13, 3.14
+
+For the full list of supported platforms, see [`.github/.platforms`](https://github.com/cloudsmith-io/cloudsmith-cli/tree/master/.github/.platforms) in the cloudsmith-cli repository.
+
 ## 🧪 Verify Installation
 
 ```bash
