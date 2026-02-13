@@ -1,3 +1,6 @@
+# cloudsmith-cli v1.12.1 adds Model Context Protocol (MCP) server support,
+# which introduces server-related dependencies (uvicorn, starlette, mcp, etc.).
+# MCP enables AI assistants to interact with the Cloudsmith API.
 class CloudsmithCli < Formula
   include Language::Python::Virtualenv
 
@@ -225,6 +228,7 @@ class CloudsmithCli < Formula
     sha256 "834edd1b0a23167694292e94f597773bc3f89f362be6effee198165a35d62933"
   end
 
+  # toon-python is a dependency of the mcp package (Model Context Protocol)
   resource "toon-python" do
     url "https://files.pythonhosted.org/packages/fc/c6/104805c4efa3853c875bd8d2f199e06d383cd307bbdc788f668c4178ce2d/toon_python-0.1.2.tar.gz"
     sha256 "10420d622c043cb5d9d444f92524731ded4b536fb77194c998855bcda12be3d2"
@@ -262,7 +266,8 @@ class CloudsmithCli < Formula
     # Install pydantic-core from wheel (Rust extension, can't build from source without maturin)
     pydantic_core = resource("pydantic-core")
     cached_pc = pydantic_core.cached_download
-    original_pc = cached_pc.basename.to_s.split("--", 2).last
+    # Extract actual wheel filename from cached path (Homebrew prefixes with hash)
+    original_pc = cached_pc.basename.to_s[/pydantic_core.*\.whl$/] || cached_pc.basename.to_s.split("--", 2).last
     wheel_pc = buildpath/original_pc
     cp cached_pc, wheel_pc
     system libexec/"bin/python", "-m", "pip", "install", "--no-deps", wheel_pc
@@ -274,7 +279,8 @@ class CloudsmithCli < Formula
     end
 
     # Install main cloudsmith-cli wheel (need to copy with correct filename)
-    original_main = cached_download.basename.to_s.split("--", 2).last
+    # Extract actual wheel filename from cached path (Homebrew prefixes with hash)
+    original_main = cached_download.basename.to_s[/cloudsmith_cli.*\.whl$/] || cached_download.basename.to_s.split("--", 2).last
     wheel_main = buildpath/original_main
     cp cached_download, wheel_main
     system libexec/"bin/python", "-m", "pip", "install", "--no-deps", wheel_main
