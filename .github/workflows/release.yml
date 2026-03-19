@@ -1,0 +1,71 @@
+# Copyright 2026 Cloudsmith Ltd
+name: Release Homebrew Tap
+
+on:
+  push:
+    tags:
+      - "v*"
+
+permissions:
+  contents: write
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Validate formula syntax
+        run: ruby -c Formula/cloudsmith-cli.rb
+
+      - name: Verify formula fields
+        run: |
+          grep -q 'url "' Formula/cloudsmith-cli.rb
+          grep -q 'sha256 "' Formula/cloudsmith-cli.rb
+          grep -q 'license "' Formula/cloudsmith-cli.rb
+
+  release:
+    needs: test
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Extract version from tag
+        id: version
+        run: echo "tag=${GITHUB_REF#refs/tags/}" >> "$GITHUB_OUTPUT"
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ steps.version.outputs.tag }}
+          name: "Homebrew Tap ${{ steps.version.outputs.tag }}"
+          body: |
+            ## Homebrew Tap Release ${{ steps.version.outputs.tag }}
+
+            ### Installation
+
+            ```bash
+            brew tap cloudsmith-io/cloudsmith-cli
+            brew install cloudsmith-cli
+            ```
+
+            ### Upgrade
+
+            ```bash
+            brew update
+            brew upgrade cloudsmith-cli
+            ```
+
+            ### Rollback to this version
+
+            Download `cloudsmith-cli.rb` from this release, then:
+            ```bash
+            brew uninstall cloudsmith-cli
+            brew install --formula ./cloudsmith-cli.rb
+            ```
+          draft: false
+          prerelease: false
+          files: |
+            Formula/cloudsmith-cli.rb
