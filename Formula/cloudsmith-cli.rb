@@ -2,8 +2,8 @@
 class CloudsmithCli < Formula
   desc "Official Cloudsmith Command-Line Interface - Be Awesome. Automate Everything"
   homepage "https://help.cloudsmith.io/docs/cli/"
-  url "https://github.com/cloudsmith-io/cloudsmith-cli/releases/download/v1.14.0/cloudsmith.pyz"
-  sha256 "affff5167a1007295a95c84b7e1efa94ad39d7ab820ee52f36ccc1a66cfb523a"
+  url "https://github.com/cloudsmith-io/cloudsmith-cli/releases/download/v1.15.0/cloudsmith.pyz"
+  sha256 "7b8b454deaa3d8c9149aab80adb25aa7fa2690f058bf37aad54b2edff100dfaa"
   license "Apache-2.0"
 
   # The PEX/zipapp bundles all Python dependencies, so we only need Python 3.10
