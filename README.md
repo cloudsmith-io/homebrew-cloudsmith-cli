@@ -1,36 +1,31 @@
 # Cloudsmith CLI Homebrew Tap
 
-🍺 This is the official Homebrew Tap for installing the [Cloudsmith CLI](https://docs.cloudsmith.com/developer-tools/cli) — a powerful command-line interface to manage everything Cloudsmith.
+This is the official Homebrew tap for installing the [Cloudsmith CLI](https://docs.cloudsmith.com/developer-tools/cli).
 
-## 🔧 Installation
+The formula installs the released `cloudsmith.pyz` PEX/zipapp from [`cloudsmith-io/cloudsmith-cli`](https://github.com/cloudsmith-io/cloudsmith-cli/releases), exposes it as the `cloudsmith` command, and uses Homebrew's `python@3.10` runtime dependency to execute it.
 
-First, add the tap:
+## Installation
 
 ```bash
 brew tap cloudsmith-io/cloudsmith-cli
-```
-
-Then install the CLI:
-
-```bash
 brew install cloudsmith-cli
 ```
 
-To upgrade:
+To upgrade an existing installation:
 
 ```bash
 brew upgrade cloudsmith-cli
 ```
 
-## ✅ Features
+To verify the installed CLI:
 
-- Install the Cloudsmith CLI via Homebrew
-- Easily keep the CLI up to date with `brew upgrade`
-- CLI lets you manage packages, repositories, and access controls
+```bash
+cloudsmith --version
+```
 
-## 🖥️ Platform Support
+## Platform Support
 
-This formula uses the official [PEX/zipapp distribution](https://github.com/cloudsmith-io/cloudsmith-cli/releases) which supports the following platforms:
+This formula uses the official [Cloudsmith CLI PEX/zipapp distribution](https://github.com/cloudsmith-io/cloudsmith-cli/releases), which supports:
 
 - **Linux x86_64** (glibc) - Debian, Ubuntu, RHEL, CentOS
 - **Linux ARM64** (glibc) - ARM-based Linux servers
@@ -40,33 +35,32 @@ This formula uses the official [PEX/zipapp distribution](https://github.com/clou
 
 **Python versions:** 3.10, 3.11, 3.12, 3.13, 3.14
 
-For the full list of supported platforms, see [`.github/.platforms`](https://github.com/cloudsmith-io/cloudsmith-cli/tree/master/.github/.platforms) in the cloudsmith-cli repository.
+For the full platform matrix, see [`.github/.platforms`](https://github.com/cloudsmith-io/cloudsmith-cli/tree/master/.github/.platforms) in the Cloudsmith CLI repository.
 
-## 🧪 Verify Installation
+## Bumping the CLI Version
+
+The normal maintainer workflow is to use the release helper:
 
 ```bash
-cloudsmith --version
+./scripts/bump-cloudsmith-cli.sh
 ```
 
-## 📦 About Cloudsmith CLI
+The helper finds the latest Cloudsmith CLI release, downloads `cloudsmith.pyz`, calculates the SHA256 used by Homebrew, creates a release branch, updates `Formula/cloudsmith-cli.rb`, runs quick checks, stages the formula change, and prints the commit, push, and PR commands for final review.
 
-The Cloudsmith CLI allows you to:
+To bump to a specific version:
 
-- Upload/download packages to your Cloudsmith repositories
-- Manage entitlement tokens, upstream proxies, and metadata
-- Integrate with CI/CD workflows and automation tools
+```bash
+./scripts/bump-cloudsmith-cli.sh --version v1.17.0
+```
 
-📘 [Read the full CLI documentation →](https://docs.cloudsmith.com/developer-tools/cli)
+Review the staged diff before running the printed commands:
 
+```bash
+git diff --cached
+```
 
-## 🤝 Contributing
+See [CONTRIBUTING.md](CONTRIBUTING.md) for the full release bump workflow and local testing commands.
 
-We welcome contributions! Please ensure changes are tested and include relevant documentation updates. For formula contributions, make sure to bump the version and update the SHA256 value. You can check contributing guide [here](https://github.com/cloudsmith-io/homebrew-cloudsmith-cli/blob/main/CONTRIBUTING.md).
+## License
 
-## 🧾 License
-
-This tap is provided under the [Apache License 2.0](https://www.apache.org/licenses/LICENSE-2.0).
-
-## 💬 Support
-
-For issues with the tap or installation, please open a GitHub issue or contact [support@cloudsmith.io](mailto:support@cloudsmith.io).
+This tap is provided under the [Apache License 2.0](LICENSE).
