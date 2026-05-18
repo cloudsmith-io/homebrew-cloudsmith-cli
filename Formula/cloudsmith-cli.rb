@@ -1,7 +1,7 @@
 # Copyright 2026 Cloudsmith Ltd
 class CloudsmithCli < Formula
   desc "Official Cloudsmith Command-Line Interface - Be Awesome. Automate Everything"
-  homepage "https://help.cloudsmith.io/docs/cli/"
+  homepage "https://docs.cloudsmith.com/developer-tools/cli"
   url "https://github.com/cloudsmith-io/cloudsmith-cli/releases/download/v1.16.0/cloudsmith.pyz"
   sha256 "303d535bd41b4bf9ed96a8978cbd94271a120bab93464c448093a995e5f03756"
   license "Apache-2.0"

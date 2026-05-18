@@ -2,6 +2,7 @@
 set -euo pipefail
 
 CLI_REPO="cloudsmith-io/cloudsmith-cli"
+FORMULA_NAME="cloudsmith-cli"
 FORMULA_PATH="Formula/cloudsmith-cli.rb"
 ASSET_NAME="cloudsmith.pyz"
 
@@ -75,11 +76,33 @@ extract_formula_tag() {
 
 extract_formula_sha() {
   ruby -ne '
-    if $_ =~ /^\s*sha256 "([0-9a-f]{64})"/
+    if $_ =~ /^  sha256 "([0-9a-f]{64})"/
       puts $1
       exit
     end
   ' "$FORMULA_PATH"
+}
+
+canonical_path() {
+  (cd "$1" 2>/dev/null && pwd -P)
+}
+
+run_brew_audit() {
+  local tap_repo
+
+  if ! command -v brew >/dev/null 2>&1; then
+    printf 'Skipping brew audit because brew is not available on PATH.\n'
+    return
+  fi
+
+  tap_repo="$(brew --repository cloudsmith-io/cloudsmith-cli 2>/dev/null || true)"
+  if [ -n "$tap_repo" ] && [ "$(canonical_path "$tap_repo")" = "$(canonical_path "$repo_root")" ]; then
+    printf 'Running brew audit...\n'
+    brew audit --strict --online "$FORMULA_NAME"
+  else
+    printf 'Skipping brew audit because this checkout is not the active Homebrew tap.\n'
+    printf 'This avoids auditing a different local copy of %s.\n' "$FORMULA_NAME"
+  fi
 }
 
 update_formula() {
@@ -154,6 +177,16 @@ if [ "$dry_run" -eq 0 ] && [ "$allow_dirty" -eq 0 ]; then
   fi
 fi
 
+current_branch="$(git branch --show-current)"
+
+if [ "$dry_run" -eq 0 ] && [ "$create_branch" -eq 0 ]; then
+  case "$current_branch" in
+    main|master)
+      die "--no-branch would stage release changes on ${current_branch}. Run without --no-branch or switch to a release branch first."
+      ;;
+  esac
+fi
+
 current_tag="$(extract_formula_tag)"
 [ -n "$current_tag" ] || die "Could not find the current cloudsmith.pyz release tag in $FORMULA_PATH"
 
@@ -212,11 +245,16 @@ EOF
 fi
 
 if [ "$create_branch" -eq 1 ]; then
-  current_branch="$(git branch --show-current)"
   if [ "$current_branch" != "$branch_name" ]; then
     if git show-ref --verify --quiet "refs/heads/${branch_name}"; then
       git switch "$branch_name"
     else
+      case "$current_branch" in
+        main|master) ;;
+        *)
+          die "Refusing to create ${branch_name} from ${current_branch}. Switch to main first, then rerun the helper."
+          ;;
+      esac
       git switch -c "$branch_name"
     fi
   fi
@@ -227,13 +265,7 @@ update_formula "$download_url" "$target_sha"
 if [ "$run_checks" -eq 1 ]; then
   printf 'Running ruby syntax check...\n'
   ruby -c "$FORMULA_PATH"
-
-  if command -v brew >/dev/null 2>&1; then
-    printf 'Running brew audit...\n'
-    brew audit --strict --online "$FORMULA_PATH"
-  else
-    printf 'Skipping brew audit because brew is not available on PATH.\n'
-  fi
+  run_brew_audit
 fi
 
 git add "$FORMULA_PATH"
@@ -254,6 +286,6 @@ Review before committing:
 
 Copy/paste when ready:
   git commit -m "Bump cloudsmith-cli to $target_tag"
-  git push -u origin $active_branch
+  git push -u origin "$active_branch"
   gh pr create --fill
 EOF

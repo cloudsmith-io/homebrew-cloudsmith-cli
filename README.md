@@ -39,7 +39,7 @@ For the full platform matrix, see [`.github/.platforms`](https://github.com/clou
 
 ## Bumping the CLI Version
 
-The normal maintainer workflow is to use the release helper:
+The normal maintainer workflow is to run the release helper from a clean, up-to-date `main` branch:
 
 ```bash
 ./scripts/bump-cloudsmith-cli.sh
