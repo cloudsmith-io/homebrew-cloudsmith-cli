@@ -6,6 +6,8 @@
 tmp/
 temp/
 *.tmp
+*.tar.gz
+*.pyz
 
 # OS-generated files
 .DS_Store
