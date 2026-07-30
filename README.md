@@ -1,14 +1,21 @@
 # Cloudsmith CLI Homebrew Tap
 
-This is the official Homebrew tap for installing the [Cloudsmith CLI](https://docs.cloudsmith.com/developer-tools/cli).
+This is the official Homebrew tap for the [Cloudsmith CLI](https://docs.cloudsmith.com/developer-tools/cli).
 
-The formula installs the released `cloudsmith.pyz` PEX/zipapp from [`cloudsmith-io/cloudsmith-cli`](https://github.com/cloudsmith-io/cloudsmith-cli/releases), exposes it as the `cloudsmith` command, and uses Homebrew's `python@3.10` runtime dependency to execute it.
+The formula installs the standalone Cloudsmith CLI binary: a self-contained executable with no Python dependency.
 
 ## Installation
 
+Install the CLI by using its full formula name:
+
 ```bash
-brew tap cloudsmith-io/cloudsmith-cli
-brew install cloudsmith-cli
+brew install cloudsmith-io/cloudsmith-cli/cloudsmith-cli
+```
+
+Or install it by using the shorter `cloudsmith` alias:
+
+```bash
+brew install cloudsmith-io/cloudsmith-cli/cloudsmith
 ```
 
 To upgrade an existing installation:
@@ -17,49 +24,39 @@ To upgrade an existing installation:
 brew upgrade cloudsmith-cli
 ```
 
+If you installed the CLI before v1.20.1, it was built on the Python-based `cloudsmith.pyz` zipapp. Upgrading to the standalone binary formula is automatic: Homebrew replaces the old installation with the new one. Afterward, the now-orphaned `python@3.10` dependency can be removed with:
+
+```bash
+brew autoremove
+```
+
 To verify the installed CLI:
 
 ```bash
 cloudsmith --version
 ```
 
-## Platform Support
+## Supported Platforms
 
-This formula uses the official [Cloudsmith CLI PEX/zipapp distribution](https://github.com/cloudsmith-io/cloudsmith-cli/releases), which supports:
+| Platform | Architecture |
+| --- | --- |
+| macOS | arm64 (Apple Silicon), x86_64 (Intel) |
+| Linux (glibc) | x86_64, aarch64 |
 
-- **Linux x86_64** (glibc) - Debian, Ubuntu, RHEL, CentOS
-- **Linux ARM64** (glibc) - ARM-based Linux servers
-- **Linux x86_64** (musl) - Alpine Linux
-- **Linux ARM64** (musl) - Alpine Linux ARM
-- **macOS ARM64** - Apple Silicon
+Homebrew on Linux targets glibc, so musl-based distributions such as Alpine aren't supported by this formula.
 
-**Python versions:** 3.10, 3.11, 3.12, 3.13, 3.14
+## Where the Binaries Come From
 
-For the full platform matrix, see [`.github/.platforms`](https://github.com/cloudsmith-io/cloudsmith-cli/tree/master/.github/.platforms) in the Cloudsmith CLI repository.
+The binaries are built and published by the Cloudsmith CLI release pipeline and hosted on Cloudsmith.
 
-## Bumping the CLI Version
+## More Information
 
-The normal maintainer workflow is to run the release helper from a clean, up-to-date `main` branch:
+- CLI documentation: see the [Cloudsmith CLI docs](https://docs.cloudsmith.com/developer-tools/cli).
+- CLI source and releases: see the [cloudsmith-cli repository](https://github.com/cloudsmith-io/cloudsmith-cli).
+- Formula or tap issues: file them in [this repository's issues](https://github.com/cloudsmith-io/homebrew-cloudsmith-cli/issues).
+- CLI bugs: file them in the [cloudsmith-cli repository's issues](https://github.com/cloudsmith-io/cloudsmith-cli/issues).
 
-```bash
-./scripts/bump-cloudsmith-cli.sh
-```
-
-The helper finds the latest Cloudsmith CLI release, downloads `cloudsmith.pyz`, calculates the SHA256 used by Homebrew, creates a release branch, updates `Formula/cloudsmith-cli.rb`, runs quick checks, stages the formula change, and prints the commit, push, and PR commands for final review.
-
-To bump to a specific version:
-
-```bash
-./scripts/bump-cloudsmith-cli.sh --version v1.17.0
-```
-
-Review the staged diff before running the printed commands:
-
-```bash
-git diff --cached
-```
-
-See [CONTRIBUTING.md](CONTRIBUTING.md) for the full release bump workflow and local testing commands.
+For maintainer instructions on bumping the formula to a new CLI release, see [CONTRIBUTING.md](CONTRIBUTING.md).
 
 ## License
 
