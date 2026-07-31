@@ -8,6 +8,9 @@ class CloudsmithCli < Formula
   homepage "https://docs.cloudsmith.com/developer-tools/cli"
   version "1.20.2"
   license "Apache-2.0"
+  # Formula-only fix on an unchanged CLI release. The next release drops this,
+  # because publish-homebrew upstream overwrites this file from its template.
+  revision 1
 
   if OS.mac? && Hardware::CPU.arm?
     url "https://dl.cloudsmith.io/public/cloudsmith/cli/raw/names/cloudsmith-cli-macos-arm64/versions/1.20.2/cloudsmith-1.20.2-macos-arm64.tar.gz"
