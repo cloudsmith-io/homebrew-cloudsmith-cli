@@ -46,15 +46,22 @@ brew pin cloudsmith-cli
 
 Use `brew unpin cloudsmith-cli` to release it again.
 
-To roll back to 1.19.0, the last release before the standalone binary, install
-the pinned formula kept in this tap for that purpose. On macOS this needs Apple
-Silicon, because the 1.19.0 zipapp shipped no Intel macOS builds of its native
-dependencies:
+This tap keeps two older versions as pinnable rollback targets:
+
+| Formula | Version | Platforms |
+| --- | --- | --- |
+| `cloudsmith-cli@1.20.1` | 1.20.1, standalone binary | all supported platforms |
+| `cloudsmith-cli@1.19.0` | 1.19.0, last Python zipapp release | macOS arm64 and Linux |
+
+`cloudsmith-cli@1.19.0` is unavailable on Intel macOS because that release
+shipped no Intel macOS builds of its native dependencies.
+
+To roll back, uninstall the current version and install the target:
 
 ```bash
 brew uninstall cloudsmith-cli
-brew install cloudsmith-io/cloudsmith-cli/cloudsmith-cli@1.19.0
-brew pin cloudsmith-cli@1.19.0
+brew install cloudsmith-io/cloudsmith-cli/cloudsmith-cli@1.20.1
+brew pin cloudsmith-cli@1.20.1
 ```
 
 To roll back to any other version, extract that version's formula from this

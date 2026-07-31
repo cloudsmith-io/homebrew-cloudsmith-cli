@@ -102,11 +102,23 @@ jobs:
       - name: Uninstall baseline version
         run: brew uninstall cloudsmith-cli
 
-  # arm64 only: the 1.19.0 zipapp carries no macOS x86_64 native wheels, so the
-  # formula requires arm64 on macOS and there is nothing to test on Intel.
   pin-target:
-    name: pin target arm64
-    runs-on: macos-latest
+    name: pin ${{ matrix.version }} ${{ matrix.arch }}
+    runs-on: ${{ matrix.runner }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          # 1.19.0 ships macOS arm64 builds only, so it has no Intel entry.
+          - runner: macos-latest
+            arch: arm64
+            version: "1.19.0"
+          - runner: macos-latest
+            arch: arm64
+            version: "1.20.1"
+          - runner: macos-15-intel
+            arch: x86_64
+            version: "1.20.1"
 
     steps:
       - uses: actions/checkout@v4
@@ -117,26 +129,25 @@ jobs:
           mkdir -p "$tap_dir"
           cp -R Formula Aliases "$tap_dir/"
           echo "TAP_DIR=$tap_dir" >> "$GITHUB_ENV"
+          echo "PIN=cloudsmith-cli@${{ matrix.version }}" >> "$GITHUB_ENV"
 
       - name: Lint pin target
         run: |
-          brew style "$TAP_DIR/Formula/cloudsmith-cli@1.19.0.rb"
-          brew audit --formula cloudsmith-io/cloudsmith-cli/cloudsmith-cli@1.19.0
+          brew style "$TAP_DIR/Formula/$PIN.rb"
+          brew audit --formula "cloudsmith-io/cloudsmith-cli/$PIN"
 
       - name: Install pin target
-        run: brew install cloudsmith-io/cloudsmith-cli/cloudsmith-cli@1.19.0
+        run: brew install "cloudsmith-io/cloudsmith-cli/$PIN"
 
       - name: Verify pin target is usable and holdable
         run: |
-          # The formula is keg_only :versioned_formula, but Homebrew auto-links a
-          # versioned keg-only formula installed on request when no other version
-          # is present, so the rollback lands on PATH without extra steps.
-          # Matched loosely: this release predates the current --version format.
+          # Matched loosely so that both the current --version format and the
+          # older one 1.19.0 predates are accepted.
           cloudsmith --version | tee /tmp/pin-version
-          grep -qF "1.19.0" /tmp/pin-version
-          brew pin cloudsmith-cli@1.19.0
-          brew list --pinned | grep -qF "cloudsmith-cli@1.19.0"
-          brew unpin cloudsmith-cli@1.19.0
+          grep -qF "${{ matrix.version }}" /tmp/pin-version
+          brew pin "$PIN"
+          brew list --pinned | grep -qF "$PIN"
+          brew unpin "$PIN"
 
       - name: Uninstall pin target
-        run: brew uninstall cloudsmith-cli@1.19.0
+        run: brew uninstall "$PIN"
