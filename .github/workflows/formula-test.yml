@@ -1,0 +1,153 @@
+# Copyright 2026 Cloudsmith Ltd
+name: Test formula on macOS
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+  # Homebrew itself changes underneath us; a scheduled run catches a formula
+  # that stops installing without this repository changing at all.
+  schedule:
+    - cron: "17 6 * * 1"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+env:
+  # A fixed known-good release, used purely as the "other end" of the upgrade
+  # and downgrade transitions. This is a deliberate baseline, not "the previous
+  # release": it does not need bumping when a new version ships.
+  BASELINE_VERSION: "1.20.1"
+  BASELINE_SHA256_ARM64: "2c2580eb8725467877f2a296d675fd681abe01050099a6405d5b4c37c6f3b901"
+  BASELINE_SHA256_X86_64: "a8e959909caab7d8d6fac390d530cd2a4bff3e70c97e12e06e2587a5b7ddfc85"
+  HOMEBREW_NO_ANALYTICS: 1
+  HOMEBREW_NO_AUTO_UPDATE: 1
+  HOMEBREW_NO_ENV_HINTS: 1
+  HOMEBREW_NO_INSTALL_CLEANUP: 1
+  HOMEBREW_NO_REQUIRE_TAP_TRUST: 1
+
+jobs:
+  lifecycle:
+    name: ${{ matrix.arch }}
+    runs-on: ${{ matrix.runner }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - runner: macos-latest
+            arch: arm64
+          - runner: macos-15-intel
+            arch: x86_64
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install this checkout as the tap
+        run: |
+          tap_dir="$(brew --repository)/Library/Taps/cloudsmith-io/homebrew-cloudsmith-cli"
+          mkdir -p "$tap_dir"
+          cp -R Formula Aliases "$tap_dir/"
+          echo "TAP_DIR=$tap_dir" >> "$GITHUB_ENV"
+
+      - name: Lint formula
+        run: |
+          brew style "$TAP_DIR/Formula/cloudsmith-cli.rb"
+          brew audit --formula cloudsmith-io/cloudsmith-cli/cloudsmith-cli
+
+      - name: Install
+        run: brew install cloudsmith-io/cloudsmith-cli/cloudsmith-cli
+
+      - name: Verify install
+        run: |
+          brew test cloudsmith-io/cloudsmith-cli/cloudsmith-cli
+          scripts/assert-cli-version.sh "$(sed -n 's/^  version "\(.*\)"$/\1/p' Formula/cloudsmith-cli.rb)"
+
+      - name: Uninstall
+        run: |
+          brew uninstall cloudsmith-cli
+          if command -v cloudsmith; then
+            echo "cloudsmith still on PATH after uninstall" >&2
+            exit 1
+          fi
+          if brew list --versions cloudsmith-cli; then
+            echo "keg still present after uninstall" >&2
+            exit 1
+          fi
+
+      - name: Install baseline version
+        run: |
+          python3 scripts/render-formula-version.py \
+            "$TAP_DIR/Formula/cloudsmith-cli.rb" \
+            "$BASELINE_VERSION" "$BASELINE_SHA256_ARM64" "$BASELINE_SHA256_X86_64"
+          brew install cloudsmith-io/cloudsmith-cli/cloudsmith-cli
+          scripts/assert-cli-version.sh "$BASELINE_VERSION"
+
+      - name: Upgrade to this formula
+        run: |
+          cp Formula/cloudsmith-cli.rb "$TAP_DIR/Formula/cloudsmith-cli.rb"
+          brew upgrade cloudsmith-io/cloudsmith-cli/cloudsmith-cli
+          scripts/assert-cli-version.sh "$(sed -n 's/^  version "\(.*\)"$/\1/p' Formula/cloudsmith-cli.rb)"
+
+      - name: Downgrade to baseline version
+        run: |
+          python3 scripts/render-formula-version.py \
+            "$TAP_DIR/Formula/cloudsmith-cli.rb" \
+            "$BASELINE_VERSION" "$BASELINE_SHA256_ARM64" "$BASELINE_SHA256_X86_64"
+          brew uninstall --force cloudsmith-cli
+          brew install cloudsmith-io/cloudsmith-cli/cloudsmith-cli
+          scripts/assert-cli-version.sh "$BASELINE_VERSION"
+
+      - name: Uninstall baseline version
+        run: brew uninstall cloudsmith-cli
+
+  pin-target:
+    name: pin ${{ matrix.version }} ${{ matrix.arch }}
+    runs-on: ${{ matrix.runner }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          # 1.19.0 ships macOS arm64 builds only, so it has no Intel entry.
+          - runner: macos-latest
+            arch: arm64
+            version: "1.19.0"
+          - runner: macos-latest
+            arch: arm64
+            version: "1.20.1"
+          - runner: macos-15-intel
+            arch: x86_64
+            version: "1.20.1"
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install this checkout as the tap
+        run: |
+          tap_dir="$(brew --repository)/Library/Taps/cloudsmith-io/homebrew-cloudsmith-cli"
+          mkdir -p "$tap_dir"
+          cp -R Formula Aliases "$tap_dir/"
+          echo "TAP_DIR=$tap_dir" >> "$GITHUB_ENV"
+          echo "PIN=cloudsmith-cli@${{ matrix.version }}" >> "$GITHUB_ENV"
+
+      - name: Lint pin target
+        run: |
+          brew style "$TAP_DIR/Formula/$PIN.rb"
+          brew audit --formula "cloudsmith-io/cloudsmith-cli/$PIN"
+
+      - name: Install pin target
+        run: brew install "cloudsmith-io/cloudsmith-cli/$PIN"
+
+      - name: Verify pin target is usable and holdable
+        run: |
+          # Matched loosely so that both the current --version format and the
+          # older one 1.19.0 predates are accepted.
+          cloudsmith --version | tee /tmp/pin-version
+          grep -qF "${{ matrix.version }}" /tmp/pin-version
+          brew pin "$PIN"
+          brew list --pinned | grep -qF "$PIN"
+          brew unpin "$PIN"
+
+      - name: Uninstall pin target
+        run: brew uninstall "$PIN"
