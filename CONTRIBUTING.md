@@ -1,92 +1,58 @@
 # Contributing to the Cloudsmith CLI Homebrew Tap
 
-This repository contains the Homebrew formula for installing the [Cloudsmith CLI](https://docs.cloudsmith.com/developer-tools/cli). Most maintenance work here is bumping the formula to a newly released Cloudsmith CLI version.
+This repository is the Homebrew tap for the [Cloudsmith CLI](https://docs.cloudsmith.com/developer-tools/cli).
 
-## Setup
+`Formula/cloudsmith-cli.rb` is **generated**, not hand-maintained. Everything else here is maintained by hand.
 
-Clone the tap repository:
+## How the Main Formula Is Released
+
+The Cloudsmith CLI release workflow owns `Formula/cloudsmith-cli.rb`. Its
+`publish-homebrew` job renders
+[`packaging/homebrew/cloudsmith-cli.rb.tmpl`](https://github.com/cloudsmith-io/cloudsmith-cli/blob/master/packaging/homebrew/cloudsmith-cli.rb.tmpl)
+with the new version and each platform's SHA256, verifies those checksums against
+the published downloads, and opens a bump pull request here as `cloudsmith-bot`.
+Review it and merge with a squash merge. There is nothing to run in this
+repository for a version bump.
+
+Because that job copies the rendered file over `Formula/cloudsmith-cli.rb`
+wholesale, **any change to the main formula must be made in the upstream
+template**, or the next release will silently drop it.
+
+If a formula fix is urgent, land it here to unblock users and open the matching
+template change upstream in the same sitting. Add `revision 1` (or the next
+number) when the CLI version itself has not changed, so that Homebrew treats it
+as an upgrade and existing installs pick the fix up. The next release removes the
+revision on its own.
+
+## What Is Maintained Here
+
+- `Formula/cloudsmith-cli@<version>.rb` — pinned rollback targets. The release
+  job does not touch these, so they persist across releases. See the
+  [README](README.md#holding-or-rolling-back-a-version).
+- `.github/workflows/formula-test.yml` — installs, uninstalls, upgrades,
+  downgrades and pins the formulae on macOS arm64 and Intel. This is what catches
+  breakage that a syntax check cannot, so trust it over local spot checks.
+- `Aliases/`, `README.md`, and this file.
+
+## Testing Locally
+
+Homebrew only loads formulae from a tap, so work inside the tap checkout rather
+than a plain clone:
 
 ```bash
-git clone https://github.com/cloudsmith-io/homebrew-cloudsmith-cli.git
-cd homebrew-cloudsmith-cli
+brew tap cloudsmith-io/cloudsmith-cli
+cd "$(brew --repository cloudsmith-io/cloudsmith-cli)"
 ```
 
-Install the formula locally for testing:
+Then, after editing:
 
 ```bash
-brew install --build-from-source ./Formula/cloudsmith-cli.rb
-```
-
-To reinstall after formula changes:
-
-```bash
-brew uninstall cloudsmith-cli
-brew install --build-from-source ./Formula/cloudsmith-cli.rb
-```
-
-Run Homebrew audit checks when this repository is your active Homebrew tap checkout:
-
-```bash
+brew style Formula/cloudsmith-cli.rb
 brew audit --strict --online cloudsmith-cli
+brew install cloudsmith-io/cloudsmith-cli/cloudsmith-cli
+brew test cloudsmith-io/cloudsmith-cli/cloudsmith-cli
 ```
 
-If you are working from a regular clone outside Homebrew's tap directory, `brew audit cloudsmith-cli` audits the tapped copy instead of this checkout.
-
-## Bumping the CLI Version
-
-Use the release helper from a clean, up-to-date `main` branch:
-
-```bash
-./scripts/bump-cloudsmith-cli.sh
-```
-
-This is the standard release bump workflow. The helper will:
-
-1. Find the latest released version from [`cloudsmith-io/cloudsmith-cli`](https://github.com/cloudsmith-io/cloudsmith-cli/releases).
-2. Download the released `cloudsmith.pyz` asset.
-3. Calculate the SHA256 for the asset used by Homebrew.
-4. Create a release branch named `release/cloudsmith-cli-v<version>`.
-5. Update `Formula/cloudsmith-cli.rb`.
-6. Run `ruby -c Formula/cloudsmith-cli.rb`.
-7. Run `brew audit --strict --online cloudsmith-cli` when this checkout is the active Homebrew tap.
-8. Stage the formula change.
-9. Print the commit, push, and PR commands for you to run after review.
-
-To target a specific version:
-
-```bash
-./scripts/bump-cloudsmith-cli.sh --version v1.17.0
-```
-
-To preview the release and SHA without editing files:
-
-```bash
-./scripts/bump-cloudsmith-cli.sh --dry-run
-```
-
-After the helper finishes, review the staged diff:
-
-```bash
-git diff --cached
-```
-
-Then run the commands printed by the helper. The script intentionally stops before committing or pushing so maintainers can do a final review first.
-
-## Manual Fallback
-
-If the helper cannot be used, update the `url` and `sha256` in `Formula/cloudsmith-cli.rb` manually. The SHA256 must be calculated from the released `cloudsmith.pyz` asset, not the source archive:
-
-```bash
-curl -L -o cloudsmith.pyz https://github.com/cloudsmith-io/cloudsmith-cli/releases/download/<VERSION>/cloudsmith.pyz
-shasum -a 256 cloudsmith.pyz
-```
-
-Then run:
-
-```bash
-ruby -c Formula/cloudsmith-cli.rb
-brew audit --strict --online cloudsmith-cli
-git add Formula/cloudsmith-cli.rb
-```
-
-Only run the `brew audit` command from the active Homebrew tap checkout; otherwise use it after syncing the tap.
+A prebuilt bundle can install cleanly and still be wrong in ways only the real
+lifecycle shows, so let CI exercise the upgrade, downgrade and pin paths on both
+architectures before merging.
