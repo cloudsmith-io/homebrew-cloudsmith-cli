@@ -1,9 +1,6 @@
 # Copyright 2026 Cloudsmith Ltd
 name: Test formula on macOS
 
-# The formula ships a prebuilt PyInstaller bundle, so the things that break it
-# are Homebrew's own install-time behaviour (relocation, linking) rather than
-# anything a syntax check can see. Exercise the real lifecycle on real runners.
 on:
   pull_request:
   push:
@@ -29,9 +26,6 @@ env:
   HOMEBREW_NO_AUTO_UPDATE: 1
   HOMEBREW_NO_ENV_HINTS: 1
   HOMEBREW_NO_INSTALL_CLEANUP: 1
-  # The tap is assembled from this checkout rather than cloned, so Homebrew has
-  # no upstream commit to verify it against. The formula under test is this
-  # repository's own code.
   HOMEBREW_NO_REQUIRE_TAP_TRUST: 1
 
 jobs:
@@ -39,9 +33,6 @@ jobs:
     name: ${{ matrix.arch }}
     runs-on: ${{ matrix.runner }}
     strategy:
-      # Both architectures are affected by relocation failures, and the Intel
-      # bundles have less Mach-O header padding to spare, so never let one
-      # architecture's result stand in for the other.
       fail-fast: false
       matrix:
         include:
@@ -55,9 +46,6 @@ jobs:
 
       - name: Install this checkout as the tap
         run: |
-          # The tap has to carry its real name. Homebrew looks preserve_rpath up
-          # through Formula[name], so under any other tap name the flag silently
-          # would not apply and the relocation guard would go untested.
           tap_dir="$(brew --repository)/Library/Taps/cloudsmith-io/homebrew-cloudsmith-cli"
           mkdir -p "$tap_dir"
           cp -R Formula Aliases "$tap_dir/"
@@ -73,8 +61,6 @@ jobs:
 
       - name: Verify install
         run: |
-          # The formula's own test block covers the binary inside the keg; this
-          # additionally proves the version on PATH, i.e. that linking worked.
           brew test cloudsmith-io/cloudsmith-cli/cloudsmith-cli
           scripts/assert-cli-version.sh "$(sed -n 's/^  version "\(.*\)"$/\1/p' Formula/cloudsmith-cli.rb)"
 
@@ -109,10 +95,7 @@ jobs:
           python3 scripts/render-formula-version.py \
             "$TAP_DIR/Formula/cloudsmith-cli.rb" \
             "$BASELINE_VERSION" "$BASELINE_SHA256_ARM64" "$BASELINE_SHA256_X86_64"
-          # Homebrew has no downgrade command, and plain `brew install` of an
-          # older formula is a silent no-op that leaves the newer version
-          # linked, so a downgrade has to uninstall first.
-          brew uninstall cloudsmith-cli
+          brew uninstall --force cloudsmith-cli
           brew install cloudsmith-io/cloudsmith-cli/cloudsmith-cli
           scripts/assert-cli-version.sh "$BASELINE_VERSION"
 

@@ -4,9 +4,7 @@
 # Repoint a rendered formula at a different Cloudsmith CLI version.
 #
 # Used by the macOS formula workflow to produce the second version needed to
-# exercise upgrade and downgrade transitions. Homebrew cannot downgrade a
-# formula on its own: a downgrade is an uninstall followed by installing an
-# older formula, so CI has to be able to materialise that older formula.
+# exercise upgrade and downgrade transitions.
 #
 # Only the macOS sha256 values are rewritten, because the transitions run on
 # macOS runners. The Linux sha256 values are deliberately left untouched and

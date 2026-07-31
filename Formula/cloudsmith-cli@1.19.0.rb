@@ -20,8 +20,17 @@ class CloudsmithCliAT1190 < Formula
 
   def install
     libexec.install "cloudsmith.pyz"
-    chmod 0755, libexec/"cloudsmith.pyz"
-    (bin/"cloudsmith").write_env_script libexec/"cloudsmith.pyz", {}
+
+    # Run the zipapp under the interpreter this formula depends on. Its
+    # `#!/usr/bin/env python3` shebang would otherwise pick up whatever python3
+    # comes first on PATH, which on some machines is older than the 3.10 the
+    # zipapp requires.
+    python = formula_opt_bin("python@3.10")/"python3.10"
+    (bin/"cloudsmith").write <<~BASH
+      #!/bin/bash
+      exec "#{python}" "#{libexec}/cloudsmith.pyz" "$@"
+    BASH
+    chmod 0755, bin/"cloudsmith"
   end
 
   test do
