@@ -36,6 +36,43 @@ To verify the installed CLI:
 cloudsmith --version
 ```
 
+## Holding or Rolling Back a Version
+
+To stay on the version you already have and stop `brew upgrade` moving it:
+
+```bash
+brew pin cloudsmith-cli
+```
+
+Use `brew unpin cloudsmith-cli` to release it again.
+
+Homebrew has no downgrade command, and installing an older formula on top of a
+newer one does nothing: it reports that the version is already installed and
+leaves the newer one linked. A rollback therefore has to uninstall first.
+
+To roll back to 1.19.0, the last release before the standalone binary, install
+the pinned formula kept in this tap for that purpose:
+
+```bash
+brew uninstall cloudsmith-cli
+brew install cloudsmith-io/cloudsmith-cli/cloudsmith-cli@1.19.0
+brew pin cloudsmith-cli@1.19.0
+```
+
+To roll back to any other version, extract that version's formula from this
+tap's history into a tap of your own:
+
+```bash
+brew tap-new <your-org>/cloudsmith-cli-versions
+brew extract --version=1.20.1 cloudsmith-io/cloudsmith-cli/cloudsmith-cli <your-org>/cloudsmith-cli-versions
+brew uninstall cloudsmith-cli
+brew install <your-org>/cloudsmith-cli-versions/cloudsmith-cli@1.20.1
+```
+
+Note that formulae extracted for 1.20.1 or 1.20.2 predate a fix for a macOS
+install failure and will fail with `Error: Failed to fix install linkage`. Add
+`preserve_rpath` to the extracted formula to install those versions on macOS.
+
 ## Supported Platforms
 
 | Platform | Architecture |

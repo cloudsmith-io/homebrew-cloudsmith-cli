@@ -118,3 +118,48 @@ jobs:
 
       - name: Uninstall baseline version
         run: brew uninstall cloudsmith-cli
+
+  pin-target:
+    name: pin target ${{ matrix.arch }}
+    runs-on: ${{ matrix.runner }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - runner: macos-latest
+            arch: arm64
+          - runner: macos-15-intel
+            arch: x86_64
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install this checkout as the tap
+        run: |
+          tap_dir="$(brew --repository)/Library/Taps/cloudsmith-io/homebrew-cloudsmith-cli"
+          mkdir -p "$tap_dir"
+          cp -R Formula Aliases "$tap_dir/"
+          echo "TAP_DIR=$tap_dir" >> "$GITHUB_ENV"
+
+      - name: Lint pin target
+        run: |
+          brew style "$TAP_DIR/Formula/cloudsmith-cli@1.19.0.rb"
+          brew audit --formula cloudsmith-io/cloudsmith-cli/cloudsmith-cli@1.19.0
+
+      - name: Install pin target
+        run: brew install cloudsmith-io/cloudsmith-cli/cloudsmith-cli@1.19.0
+
+      - name: Verify pin target is usable and holdable
+        run: |
+          # The formula is keg_only :versioned_formula, but Homebrew auto-links a
+          # versioned keg-only formula installed on request when no other version
+          # is present, so the rollback lands on PATH without extra steps.
+          # Matched loosely: this release predates the current --version format.
+          cloudsmith --version | tee /tmp/pin-version
+          grep -qF "1.19.0" /tmp/pin-version
+          brew pin cloudsmith-cli@1.19.0
+          brew list --pinned | grep -qF "cloudsmith-cli@1.19.0"
+          brew unpin cloudsmith-cli@1.19.0
+
+      - name: Uninstall pin target
+        run: brew uninstall cloudsmith-cli@1.19.0
