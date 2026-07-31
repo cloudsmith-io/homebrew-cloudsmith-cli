@@ -102,17 +102,11 @@ jobs:
       - name: Uninstall baseline version
         run: brew uninstall cloudsmith-cli
 
+  # arm64 only: the 1.19.0 zipapp carries no macOS x86_64 native wheels, so the
+  # formula requires arm64 on macOS and there is nothing to test on Intel.
   pin-target:
-    name: pin target ${{ matrix.arch }}
-    runs-on: ${{ matrix.runner }}
-    strategy:
-      fail-fast: false
-      matrix:
-        include:
-          - runner: macos-latest
-            arch: arm64
-          - runner: macos-15-intel
-            arch: x86_64
+    name: pin target arm64
+    runs-on: macos-latest
 
     steps:
       - uses: actions/checkout@v4

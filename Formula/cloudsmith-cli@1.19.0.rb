@@ -18,6 +18,13 @@ class CloudsmithCliAT1190 < Formula
   # The PEX/zipapp bundles all Python dependencies, so we only need Python 3.10.
   depends_on "python@3.10"
 
+  # The 1.19.0 zipapp bundles native wheels for macOS arm64 only: it carries no
+  # macosx x86_64 build of rpds-py, pydantic-core or cffi, so it cannot run on an
+  # Intel Mac. Fail with that up front rather than a PEX resolution dump.
+  on_macos do
+    depends_on arch: :arm64
+  end
+
   def install
     libexec.install "cloudsmith.pyz"
 
