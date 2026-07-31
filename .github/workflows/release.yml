@@ -58,13 +58,19 @@ jobs:
             brew upgrade cloudsmith-cli
             ```
 
-            ### Rollback to this version
+            ### Rollback
 
-            Download `cloudsmith-cli.rb` from this release, then:
+            Homebrew has no downgrade command, so a rollback uninstalls first and
+            then installs a pinned formula from the tap:
+
             ```bash
             brew uninstall cloudsmith-cli
-            brew install --formula ./cloudsmith-cli.rb
+            brew install cloudsmith-io/cloudsmith-cli/cloudsmith-cli@1.20.1
+            brew pin cloudsmith-cli@1.20.1
             ```
+
+            See the [README](https://github.com/cloudsmith-io/homebrew-cloudsmith-cli#holding-or-rolling-back-a-version)
+            for the available pinned versions and for rolling back to any other version.
           draft: false
           prerelease: false
           files: |
