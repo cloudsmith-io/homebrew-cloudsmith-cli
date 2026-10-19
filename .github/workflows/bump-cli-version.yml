@@ -1,0 +1,40 @@
+# Copyright 2026 Cloudsmith Ltd
+name: Bump Cloudsmith CLI
+
+# Opens a pull request that moves Formula/cloudsmith-cli.rb to a Cloudsmith
+# CLI release, and merges it when the checks pass. The CLI release workflow
+# sends the cloudsmith-cli-release event. Run the workflow by hand to move to
+# a specific version.
+on:
+  repository_dispatch:
+    types:
+      - cloudsmith-cli-release
+  workflow_dispatch:
+    inputs:
+      version:
+        description: The Cloudsmith CLI version to move to, for example 1.29.1.
+        required: true
+
+permissions: {}
+
+concurrency:
+  group: bump-cli-version
+  cancel-in-progress: false
+  queue: max
+
+jobs:
+  bump:
+    name: Open the bump pull request
+    permissions:
+      contents: read
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Open the bump pull request
+        uses: cloudsmith-io/cloudsmith-cli/.github/actions/open-cli-bump-pr@34f5fd967daaab552a66dd9a890d550c47a39b0c # master
+        with:
+          version: ${{ github.event.client_payload.version || inputs.version }}
+          bump-command: python3 scripts/bump-cli-version.py "$VERSION"
+          merge: "true"
+          token: ${{ secrets.DOWNSTREAM_RELEASE_PUSH_TOKEN }}
+          ssh-signing-key: ${{ secrets.CLOUDSMITH_BOT_SSH_KEY }}
