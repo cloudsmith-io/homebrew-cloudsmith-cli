@@ -1,8 +1,7 @@
 # Copyright 2026 Cloudsmith Ltd
 #
-# Template for the Homebrew formula published to the Homebrew tap
-# repository. Rendered by the release workflow (publish-homebrew job);
-# do not edit the rendered copy in the tap by hand.
+# The Bump Cloudsmith CLI workflow moves this formula to each Cloudsmith CLI
+# release. It changes only the version, the sha256 values and the revision.
 class CloudsmithCli < Formula
   desc "Official Cloudsmith Command-Line Interface"
   homepage "https://docs.cloudsmith.com/developer-tools/cli"

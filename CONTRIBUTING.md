@@ -2,32 +2,34 @@
 
 This repository is the Homebrew tap for the [Cloudsmith CLI](https://docs.cloudsmith.com/developer-tools/cli).
 
-`Formula/cloudsmith-cli.rb` is **generated**, not hand-maintained. Everything else here is maintained by hand.
+Everything here is maintained by hand. Each Cloudsmith CLI release changes only
+the version, the sha256 values and the revision in `Formula/cloudsmith-cli.rb`.
 
 ## How the Main Formula Is Released
 
-The Cloudsmith CLI release workflow owns `Formula/cloudsmith-cli.rb`. Its
-`publish-homebrew` job renders
-[`packaging/homebrew/cloudsmith-cli.rb.tmpl`](https://github.com/cloudsmith-io/cloudsmith-cli/blob/master/packaging/homebrew/cloudsmith-cli.rb.tmpl)
-with the new version and each platform's SHA256, verifies those checksums against
-the published downloads, and opens a bump pull request here as `cloudsmith-bot`.
-Review it and merge with a squash merge. There is nothing to run in this
-repository for a version bump.
+Each Cloudsmith CLI release sends a `cloudsmith-cli-release` event to this
+repository. The `Bump Cloudsmith CLI` workflow then runs
+`scripts/bump-cli-version.py`. The script reads the sha256 of each platform
+from the `SHA256SUMS` asset of the CLI release. It verifies each published
+download against its sha256, then writes the new version and the sha256 values
+into the formula. The workflow opens a bump pull request as `cloudsmith-bot` and
+squash-merges it when the checks pass.
 
-Because that job copies the rendered file over `Formula/cloudsmith-cli.rb`
-wholesale, **any change to the main formula must be made in the upstream
-template**, or the next release will silently drop it.
+To move to a CLI version by hand, run the `Bump Cloudsmith CLI` workflow with
+that version. To see the change locally, run
+`python3 scripts/bump-cli-version.py 1.29.1`. The workflow needs the
+`DOWNSTREAM_RELEASE_PUSH_TOKEN` and `CLOUDSMITH_BOT_SSH_KEY` secrets of
+`cloudsmith-bot`.
 
-If a formula fix is urgent, land it here to unblock users and open the matching
-template change upstream in the same sitting. Add `revision 1` (or the next
-number) when the CLI version itself has not changed, so that Homebrew treats it
-as an upgrade and existing installs pick the fix up. The next release removes the
-revision on its own.
+To fix the formula, change `Formula/cloudsmith-cli.rb` here. The next release
+keeps the change. Add `revision 1` (or the next number) when the CLI version
+itself has not changed, so that Homebrew treats it as an upgrade and existing
+installs pick the fix up. The next release removes the revision.
 
 ## What Is Maintained Here
 
-- `Formula/cloudsmith-cli@<version>.rb` — pinned rollback targets. The release
-  job does not touch these, so they persist across releases. See the
+- `Formula/cloudsmith-cli@<version>.rb` — pinned rollback targets. The bump
+  workflow does not touch these, so they persist across releases. See the
   [README](README.md#holding-or-rolling-back-a-version).
 - `.github/workflows/formula-test.yml` — installs, uninstalls, upgrades,
   downgrades and pins the formulae on macOS arm64 and Intel. This is what catches
