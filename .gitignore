@@ -8,6 +8,7 @@ temp/
 *.tmp
 *.tar.gz
 *.pyz
+__pycache__/
 
 # OS-generated files
 .DS_Store

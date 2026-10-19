@@ -31,7 +31,7 @@ jobs:
     timeout-minutes: 30
     steps:
       - name: Open the bump pull request
-        uses: cloudsmith-io/cloudsmith-cli/.github/actions/open-cli-bump-pr@4bf7595eae76a321f8cf58b8221fc74148b25be8 # eng-14534 branch
+        uses: cloudsmith-io/cloudsmith-cli/.github/actions/open-cli-bump-pr@34f5fd967daaab552a66dd9a890d550c47a39b0c # master
         with:
           version: ${{ github.event.client_payload.version || inputs.version }}
           bump-command: python3 scripts/bump-cli-version.py "$VERSION"

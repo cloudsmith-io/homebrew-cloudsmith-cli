@@ -1,9 +1,12 @@
 # Copyright 2026 Cloudsmith Ltd
 import hashlib
 import importlib
+import io
+import sys
 import tempfile
 import unittest
 from pathlib import Path
+from unittest import mock
 
 bump_cli_version = importlib.import_module("bump-cli-version")
 
@@ -49,9 +52,10 @@ class BumpTest(unittest.TestCase):
             bumped,
         )
 
-    def test_keeps_a_formula_that_pins_the_version_or_a_newer_one(self):
-        self.assertIsNone(bump_cli_version.bump(FORMULA, "1.29.0", SHA256SUMS))
-        self.assertIsNone(bump_cli_version.bump(FORMULA, "1.28.9", SHA256SUMS))
+    def test_needs_bump_only_for_a_newer_version(self):
+        self.assertTrue(bump_cli_version.needs_bump(FORMULA, "1.30.0"))
+        self.assertFalse(bump_cli_version.needs_bump(FORMULA, "1.29.0"))
+        self.assertFalse(bump_cli_version.needs_bump(FORMULA, "1.28.9"))
 
     def test_fails_when_a_formula_target_has_no_checksum(self):
         sums = SHA256SUMS.replace("macos-arm64", "macos-x86_64")
@@ -73,6 +77,30 @@ class VerifyDownloadsTest(unittest.TestCase):
                 bump_cli_version.verify_downloads(
                     formula.replace(good_sha256, "f" * 64)
                 )
+
+
+class FetchTest(unittest.TestCase):
+    @mock.patch.object(bump_cli_version.time, "sleep")
+    @mock.patch.object(bump_cli_version.urllib.request, "urlopen")
+    def test_tries_again_after_a_read_timeout(self, urlopen, _sleep):
+        urlopen.side_effect = [TimeoutError("read timed out"), io.BytesIO(b"body")]
+
+        self.assertEqual(bump_cli_version.fetch("https://example.com"), b"body")
+
+
+class MainTest(unittest.TestCase):
+    def test_does_not_fetch_for_a_pinned_version(self):
+        with tempfile.TemporaryDirectory() as directory:
+            formula_path = Path(directory, "cloudsmith-cli.rb")
+            formula_path.write_text(FORMULA, encoding="utf-8")
+            with mock.patch.multiple(
+                bump_cli_version,
+                FORMULA_PATH=str(formula_path),
+                fetch=mock.Mock(side_effect=AssertionError("fetched")),
+            ), mock.patch.object(sys, "argv", ["bump-cli-version.py", "1.29.0"]):
+                bump_cli_version.main()
+
+            self.assertEqual(formula_path.read_text(encoding="utf-8"), FORMULA)
 
 
 if __name__ == "__main__":

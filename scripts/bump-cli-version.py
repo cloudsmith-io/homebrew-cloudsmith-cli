@@ -14,7 +14,6 @@ import importlib
 import re
 import sys
 import time
-import urllib.error
 import urllib.request
 
 render_formula_version = importlib.import_module("render-formula-version")
@@ -39,12 +38,14 @@ def version_key(version):
     return tuple(int(part) for part in version.split("."))
 
 
-def bump(formula, version, sha256sums):
-    """Return formula moved to version, or None when it pins version or a newer one."""
+def needs_bump(formula, version):
+    """Return True when version is newer than the version that formula pins."""
     pinned_version = render_formula_version.VERSION_LINE.search(formula).group(1)
-    if version_key(version) <= version_key(pinned_version):
-        return None
+    return version_key(version) > version_key(pinned_version)
 
+
+def bump(formula, version, sha256sums):
+    """Return formula moved to version."""
     shas = {target: sha256 for sha256, target in SUMS_LINE.findall(sha256sums)}
     missing = set(ARCHIVE_TARGET.findall(formula)) - shas.keys()
     if missing:
@@ -58,7 +59,7 @@ def fetch(url):
         try:
             with urllib.request.urlopen(url, timeout=HTTP_TIMEOUT_SECONDS) as response:
                 return response.read()
-        except urllib.error.URLError as error:
+        except OSError as error:
             last_error = error
             print(f"attempt {attempt}: {url} is not ready", file=sys.stderr)
             if attempt < DOWNLOAD_ATTEMPTS:
@@ -81,14 +82,14 @@ def main():
 
     with open(FORMULA_PATH, encoding="utf-8") as formula_file:
         formula = formula_file.read()
-    sha256sums = fetch(SHA256SUMS_URL.format(version=version)).decode()
-    bumped = bump(formula, version, sha256sums)
-    if bumped is None:
+    if not needs_bump(formula, version):
         print(
             f"{FORMULA_PATH} already pins Cloudsmith CLI {version} or newer",
             file=sys.stderr,
         )
         return
+    sha256sums = fetch(SHA256SUMS_URL.format(version=version)).decode()
+    bumped = bump(formula, version, sha256sums)
     verify_downloads(bumped)
     with open(FORMULA_PATH, "w", encoding="utf-8") as formula_file:
         formula_file.write(bumped)
