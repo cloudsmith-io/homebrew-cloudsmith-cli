@@ -5,21 +5,21 @@
 class CloudsmithCli < Formula
   desc "Official Cloudsmith Command-Line Interface"
   homepage "https://docs.cloudsmith.com/developer-tools/cli"
-  version "1.30.1"
+  version "1.31.0"
   license "Apache-2.0"
 
   if OS.mac? && Hardware::CPU.arm?
-    url "https://dl.cloudsmith.io/public/cloudsmith/cli/raw/names/cloudsmith-cli-macos-arm64/versions/1.30.1/cloudsmith-1.30.1-macos-arm64.tar.gz"
-    sha256 "6c8cb212fd21bf1fca2fc3729e95480f08e13ed9a465e66dd23d3ec3d194cb03"
+    url "https://dl.cloudsmith.io/public/cloudsmith/cli/raw/names/cloudsmith-cli-macos-arm64/versions/1.31.0/cloudsmith-1.31.0-macos-arm64.tar.gz"
+    sha256 "895f2d3465df8b2749d1a8959fa936db9c8e860114283d4e08dce131b30bc868"
   elsif OS.mac? && Hardware::CPU.intel?
-    url "https://dl.cloudsmith.io/public/cloudsmith/cli/raw/names/cloudsmith-cli-macos-x86_64/versions/1.30.1/cloudsmith-1.30.1-macos-x86_64.tar.gz"
-    sha256 "1aa61f55d7ba0c4b3acc35809b96143a1677db163eb082dad5a5c5debba141e7"
+    url "https://dl.cloudsmith.io/public/cloudsmith/cli/raw/names/cloudsmith-cli-macos-x86_64/versions/1.31.0/cloudsmith-1.31.0-macos-x86_64.tar.gz"
+    sha256 "ef57c8458cbbe4e9c2924d2ee420e5603919d5b6995869b637468ea5035fb970"
   elsif OS.linux? && Hardware::CPU.arm? && Hardware::CPU.is_64_bit?
-    url "https://dl.cloudsmith.io/public/cloudsmith/cli/raw/names/cloudsmith-cli-linux-aarch64-gnu/versions/1.30.1/cloudsmith-1.30.1-linux-aarch64-gnu.tar.gz"
-    sha256 "a67b8d268c7e7e0102f65a32517f18802a01c8c3606dc5672298bbed188843d4"
+    url "https://dl.cloudsmith.io/public/cloudsmith/cli/raw/names/cloudsmith-cli-linux-aarch64-gnu/versions/1.31.0/cloudsmith-1.31.0-linux-aarch64-gnu.tar.gz"
+    sha256 "b036601b4c30f4c4b178b610662420a4b9568bf57d357485e3a762a2276c4d89"
   elsif OS.linux? && Hardware::CPU.intel? && Hardware::CPU.is_64_bit?
-    url "https://dl.cloudsmith.io/public/cloudsmith/cli/raw/names/cloudsmith-cli-linux-x86_64-gnu/versions/1.30.1/cloudsmith-1.30.1-linux-x86_64-gnu.tar.gz"
-    sha256 "dcd5b005232c165d4cd7a63f078b778918aaa9e3a0e9ea2450eabfab62726912"
+    url "https://dl.cloudsmith.io/public/cloudsmith/cli/raw/names/cloudsmith-cli-linux-x86_64-gnu/versions/1.31.0/cloudsmith-1.31.0-linux-x86_64-gnu.tar.gz"
+    sha256 "6ea8978f13796f675a2559916faf40eff77627e8e682d1a02c640a2575e46e39"
   end
 
   # Placed after the url stanzas: a leading livecheck url is misdetected as the
