@@ -36,5 +36,5 @@ jobs:
           version: ${{ github.event.client_payload.version || inputs.version }}
           bump-command: python3 scripts/bump-cli-version.py "$VERSION"
           merge: "true"
-          token: ${{ secrets.DOWNSTREAM_RELEASE_PUSH_TOKEN }}
-          ssh-signing-key: ${{ secrets.CLOUDSMITH_BOT_SSH_KEY }}
+          token: ${{ secrets.CLOUDSMITH_BOT_TOKEN }}
+          ssh-signing-key: ${{ secrets.CLOUDSMITH_BOT_SSH_SIGNING_KEY }}
