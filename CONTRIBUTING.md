@@ -18,7 +18,7 @@ squash-merges it when the checks pass.
 To move to a CLI version by hand, run the `Bump Cloudsmith CLI` workflow with
 that version. To see the change locally, run
 `python3 scripts/bump-cli-version.py 1.29.1`. The workflow needs the
-`DOWNSTREAM_RELEASE_PUSH_TOKEN` and `CLOUDSMITH_BOT_SSH_KEY` secrets of
+`CLOUDSMITH_BOT_TOKEN` and `CLOUDSMITH_BOT_SSH_SIGNING_KEY` secrets of
 `cloudsmith-bot`.
 
 To fix the formula, change `Formula/cloudsmith-cli.rb` here. The next release
